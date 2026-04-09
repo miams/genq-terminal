@@ -82,39 +82,10 @@ class DockTilePlugin: NSObject, NSDockTilePlugIn {
     /// Reset the application icon and dock tile icon to the default.
     private func resetIcon(dockTile: NSDockTile) {
         let appBundlePath = self.ghosttyAppURL?.path
-        let appIcon: NSImage
-        if #available(macOS 26.0, *) {
-            // Reset to the default (glassy) icon.
-            if let appBundlePath {
-                NSWorkspace.shared.setIcon(nil, forFile: appBundlePath)
-            }
-
-            #if DEBUG
-            // Use the `Blueprint` icon to distinguish Debug from Release builds.
-            appIcon = pluginBundle.image(forResource: "BlueprintImage")!
-            #else
-            // Get the composed icon from the app bundle.
-            if let appBundlePath,
-                let iconRep = NSWorkspace.shared.icon(forFile: appBundlePath)
-                .bestRepresentation(
-                    for: CGRect(origin: .zero, size: dockTile.size),
-                    context: nil,
-                    hints: nil
-            ) {
-                appIcon = NSImage(size: dockTile.size)
-                appIcon.addRepresentation(iconRep)
-            } else {
-                // If something unexpected happens on macOS 26,
-                // fall back to a bundled icon.
-                appIcon = pluginBundle.image(forResource: "AppIconImage")!
-            }
-            #endif
-        } else {
-            // Use the bundled icon to keep the corner radius consistent with pre-Tahoe apps.
-            appIcon = pluginBundle.image(forResource: "AppIconImage")!
-            if let appBundlePath {
-                NSWorkspace.shared.setIcon(appIcon, forFile: appBundlePath)
-            }
+        // Use the bundled icon to keep the corner radius consistent across macOS versions.
+        let appIcon = pluginBundle.image(forResource: "AppIconImage")!
+        if let appBundlePath {
+            NSWorkspace.shared.setIcon(appIcon, forFile: appBundlePath)
         }
 
         // Notify Finder/Dock so icon caches refresh immediately.
