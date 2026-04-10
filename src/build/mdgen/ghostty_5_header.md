@@ -1,18 +1,18 @@
-% GHOSTTY(5) Version @@VERSION@@ | Ghostty terminal emulator configuration file
+% GHOSTTY(5) Version @@VERSION@@ | GenQuery Terminal configuration file
 
 # NAME
 
-**ghostty** - Ghostty terminal emulator configuration file
+**ghostty** - GenQuery Terminal configuration file
 
 # DESCRIPTION
 
-To configure Ghostty, you must use a configuration file. GUI-based configuration
+To configure GenQuery Terminal, you must use a configuration file. GUI-based configuration
 is on the roadmap but not yet supported. The configuration file must be placed
 at `$XDG_CONFIG_HOME/ghostty/config.ghostty`, which defaults to `~/.config/ghostty/config.ghostty`
 if the [XDG environment is not set](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html).
 
 **If you are using macOS, the configuration file can also be placed at
-`$HOME/Library/Application Support/com.mitchellh.ghostty/config.ghostty`.** This is the
+`$HOME/Library/Application Support/com.zephyrsystems.genquery/config.ghostty`.** This is the
 default configuration location for macOS. It will be searched before any of the
 XDG environment locations listed above.
 
@@ -68,49 +68,49 @@ attach the doc comment to.
 You can also see and read all available configuration options in the source
 Config structure. The available keys are the keys verbatim, and their possible
 values are typically documented in the comments. You also can search for
-the public config files of many Ghostty users for examples and inspiration.
+the public config files of many GenQuery Terminal users for examples and inspiration.
 
 ## Configuration Errors
 
-If your configuration file has any errors, Ghostty does its best to ignore
+If your configuration file has any errors, GenQuery Terminal does its best to ignore
 them and move on. Configuration errors will be logged.
 
 ## Debugging Configuration
 
 You can verify that configuration is being properly loaded by looking at the
-debug output of Ghostty.
+debug output of GenQuery Terminal.
 
 In the debug output, you should see in the first 20 lines or so messages about
 loading (or not loading) a configuration file, as well as any errors it may have
 encountered. Configuration errors are also shown in a dedicated window on both
-macOS and Linux (GTK). Ghostty does not treat configuration errors as fatal and
+macOS and Linux (GTK). GenQuery Terminal does not treat configuration errors as fatal and
 will fall back to default values for erroneous keys.
 
-You can also view the full configuration Ghostty is loading using `ghostty
+You can also view the full configuration GenQuery Terminal is loading using `ghostty
 +show-config` from the command-line. Use the `--help` flag to additional options
 for that command.
 
 ## Logging
 
-Ghostty can write logs to a number of destinations. On all platforms, logging to
-`stderr` is available. Depending on the platform and how Ghostty was launched,
+GenQuery Terminal can write logs to a number of destinations. On all platforms, logging to
+`stderr` is available. Depending on the platform and how GenQuery Terminal was launched,
 logs sent to `stderr` may be stored by the system and made available for later
 retrieval.
 
-On Linux if Ghostty is launched by the default `systemd` user service, you can use
-`journald` to see Ghostty's logs: `journalctl --user --unit app-com.mitchellh.ghostty.service`.
+On Linux if GenQuery Terminal is launched by the default `systemd` user service, you can use
+`journald` to see GenQuery Terminal's logs: `journalctl --user --unit app-com.zephyrsystems.genquery.service`.
 
 On macOS logging to the macOS unified log is available and enabled by default.
 --Use the system `log` CLI to view Ghostty's logs: `sudo log stream --level debug
---predicate 'subsystem=="com.mitchellh.ghostty"'`.
+--predicate 'subsystem=="com.zephyrsystems.genquery"'`.
 
-Ghostty's logging can be configured in two ways. The first is by what
-optimization level Ghostty is compiled with. If Ghostty is compiled with `Debug`
-optimizations debug logs will be output to `stderr`. If Ghostty is compiled with
+GenQuery Terminal's logging can be configured in two ways. The first is by what
+optimization level GenQuery Terminal is compiled with. If GenQuery Terminal is compiled with `Debug`
+optimizations debug logs will be output to `stderr`. If GenQuery Terminal is compiled with
 any other optimization the debug logs will not be output to `stderr`.
 
-Ghostty also checks the `GHOSTTY_LOG` environment variable. It can be used
-to control which destinations receive logs. Ghostty currently defines two
+GenQuery Terminal also checks the `GHOSTTY_LOG` environment variable. It can be used
+to control which destinations receive logs. GenQuery Terminal currently defines two
 destinations:
 
 - `stderr` - logging to `stderr`.

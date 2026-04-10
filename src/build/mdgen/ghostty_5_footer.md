@@ -4,7 +4,7 @@ _\$XDG_CONFIG_HOME/ghostty/config.ghostty_
 
 : Location of the default configuration file.
 
-_\$HOME/Library/Application Support/com.mitchellh.ghostty/config.ghostty_
+_\$HOME/Library/Application Support/com.zephyrsystems.genquery/config.ghostty_
 
 : **On macOS**, location of the default configuration file. This location takes
 precedence over the XDG environment locations.
@@ -20,7 +20,7 @@ for configuration files.
 
 : Default location for configuration files.
 
-**$HOME/Library/Application Support/com.mitchellh.ghostty**
+**$HOME/Library/Application Support/com.zephyrsystems.genquery**
 
 : **MACOS ONLY** default location for configuration files. This location takes
 precedence over the XDG environment locations.
@@ -31,12 +31,12 @@ precedence over the XDG environment locations.
 
 # BUGS
 
-See GitHub issues: <https://github.com/ghostty-org/ghostty/issues>
+See GitHub issues: <https://github.com/miams/genq-terminal/issues>
 
 # AUTHOR
 
-Mitchell Hashimoto <m@mitchellh.com>
-Ghostty contributors <https://github.com/ghostty-org/ghostty/graphs/contributors>
+Zephyr Systems
+GenQuery Terminal contributors <https://github.com/miams/genq-terminal/graphs/contributors>
 
 # SEE ALSO
 
