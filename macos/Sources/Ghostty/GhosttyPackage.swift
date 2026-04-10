@@ -13,10 +13,10 @@ extension ghostty_surface_t: @unchecked @retroactive Sendable {}
 
 extension Ghostty {
     // The user notification category identifier
-    static let userNotificationCategory = "com.mitchellh.ghostty.userNotification"
+    static let userNotificationCategory = "com.zephyrsystems.genquery.userNotification"
 
     // The user notification "Show" action
-    static let userNotificationActionShow = "com.mitchellh.ghostty.userNotification.Show"
+    static let userNotificationActionShow = "com.zephyrsystems.genquery.userNotification.Show"
 }
 
 // MARK: Build Info

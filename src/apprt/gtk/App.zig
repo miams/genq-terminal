@@ -23,14 +23,14 @@ pub const must_draw_from_app_thread = true;
 
 /// GTK application ID
 pub const application_id = switch (builtin.mode) {
-    .Debug, .ReleaseSafe => "com.mitchellh.ghostty-debug",
-    .ReleaseFast, .ReleaseSmall => "com.mitchellh.ghostty",
+    .Debug, .ReleaseSafe => "com.zephyrsystems.genquery-debug",
+    .ReleaseFast, .ReleaseSmall => "com.zephyrsystems.genquery",
 };
 
 /// GTK object path
 pub const object_path = switch (builtin.mode) {
-    .Debug, .ReleaseSafe => "/com/mitchellh/ghostty_debug",
-    .ReleaseFast, .ReleaseSmall => "/com/mitchellh/ghostty",
+    .Debug, .ReleaseSafe => "/com/zephyrsystems/genquery_debug",
+    .ReleaseFast, .ReleaseSmall => "/com/zephyrsystems/genquery",
 };
 
 /// The GObject Application instance
