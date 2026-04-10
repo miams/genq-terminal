@@ -232,9 +232,9 @@ with a direct Zig installation from ziglang.org (same source as `zigup`):
 - name: Install Zig 0.15.2
   run: |
     ZIG_VERSION="0.15.2"
-    ZIG_URL="https://ziglang.org/download/${ZIG_VERSION}/zig-macos-aarch64-${ZIG_VERSION}.tar.xz"
+    ZIG_URL="https://ziglang.org/download/${ZIG_VERSION}/zig-aarch64-macos-${ZIG_VERSION}.tar.xz"
     curl -fsSL "$ZIG_URL" | tar -xJ -C /tmp
-    sudo mv "/tmp/zig-macos-aarch64-${ZIG_VERSION}" /usr/local/zig
+    sudo mv "/tmp/zig-aarch64-macos-${ZIG_VERSION}" /usr/local/zig
     sudo ln -sf /usr/local/zig/zig /usr/local/bin/zig
     zig version
 
@@ -245,22 +245,202 @@ with a direct Zig installation from ziglang.org (same source as `zigup`):
 
 **Commit:** `ci(macos): install Zig directly, skip Nix on macos-26`
 **Run ID:** 24218415133
-**Result:** Pending at time of writing.
+**Result:** FAILURE — see Build #11.
 
 ---
 
-## Invariants discovered through this investigation
+## Build #11 — 2026-04-09
+
+**Commit:** `ci(macos): install Zig directly, skip Nix on macos-26`
+**Run ID:** 24218415133
+**Runner:** `macos-26-arm64` = macOS 26.3
+**Result:** FAILURE
+
+### Failure
+The Install Zig step failed immediately:
+
+```
+curl: (22) The requested URL returned error: 404
+mv: rename /tmp/zig-macos-aarch64-0.15.2 to /usr/local/zig: No such file or directory
+```
+
+**Root cause:** Wrong filename in the download URL. The workflow used
+`zig-macos-aarch64-0.15.2.tar.xz` (platform-then-architecture), but
+ziglang.org names arm64 macOS tarballs `zig-aarch64-macos-0.15.2.tar.xz`
+(architecture-then-platform). Confirmed via `https://ziglang.org/download/index.json`.
+
+The correct URL is:
+```
+https://ziglang.org/download/0.15.2/zig-aarch64-macos-0.15.2.tar.xz
+```
+
+### Remedy
+Corrected the filename in the workflow URL and `mv` target:
+- `zig-macos-aarch64-${ZIG_VERSION}` → `zig-aarch64-macos-${ZIG_VERSION}`
+
+**Commit:** `fix(ci): correct Zig download URL — aarch64-macos not macos-aarch64`
+
+---
+
+## Build #12 — 2026-04-09 ✓ FIRST SUCCESS
+
+**Commit:** `fix(ci): correct Zig download URL — aarch64-macos not macos-aarch64`
+**Run ID:** 24218831413
+**Runner:** `macos-26-arm64` = macOS 26.3 (25D125), Xcode 26.2 (default)
+**Duration:** 10m 53s
+**Result:** SUCCESS — both macOS and Linux jobs passed.
+
+### What worked
+- macOS: Zig 0.15.2 installed directly from ziglang.org, `zig build -Doptimize=ReleaseFast` ran against the system macOS 26 SDK. App signed, packaged as DMG, uploaded as artifact.
+- Linux: Nix + `nix develop -c zig build -Doptimize=ReleaseFast -Dapp-runtime=gtk` (Nix works fine on Linux where SDK isolation is not an issue). Packaged as `.tar.gz`, uploaded as artifact.
+
+### Remaining warning (non-blocking)
+```
+Node.js 20 actions are deprecated. The following actions are running on
+Node.js 20: actions/checkout@v4, actions/upload-artifact@v4.
+Actions will be forced to run with Node.js 24 by default starting
+June 2nd, 2026.
+```
+
+Addressed in the follow-up commit by adding `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true`
+to the workflow-level `env:` block.
+
+---
+
+## Working build configuration (as of 2026-04-09)
+
+### `miams/genq` — `.github/workflows/build-ghostty.yml`
+
+```yaml
+name: Build Ghostty
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+
+  build-macos:
+    name: Build macOS (Ghostty)
+    runs-on: macos-26          # macOS 26 required for actool IconComposer support
+
+    steps:
+      - name: Checkout genq
+        uses: actions/checkout@v4
+
+      - name: Checkout genq-terminal (private, via deploy key)
+        uses: actions/checkout@v4
+        with:
+          repository: miams/genq-terminal
+          ref: genq             # MUST be genq — main requires Zig nightly
+          ssh-key: ${{ secrets.GENQ_TERMINAL_DEPLOY_KEY }}
+          path: genq-terminal
+
+      - name: Install Zig 0.15.2
+        run: |
+          # Direct install (NOT via Nix) — Nix isolates SDKROOT to macOS 15,
+          # causing undefined symbol linker errors on the macOS 26 runner.
+          ZIG_VERSION="0.15.2"
+          ZIG_URL="https://ziglang.org/download/${ZIG_VERSION}/zig-aarch64-macos-${ZIG_VERSION}.tar.xz"
+          curl -fsSL "$ZIG_URL" | tar -xJ -C /tmp
+          sudo mv "/tmp/zig-aarch64-macos-${ZIG_VERSION}" /usr/local/zig
+          sudo ln -sf /usr/local/zig/zig /usr/local/bin/zig
+          zig version
+
+      - name: Build
+        working-directory: genq-terminal
+        run: zig build -Doptimize=ReleaseFast
+
+      - name: Sign
+        working-directory: genq-terminal
+        run: |
+          xattr -cr zig-out/Ghostty.app
+          codesign --force --deep --sign - "zig-out/Ghostty.app"
+
+      - name: Package DMG
+        working-directory: genq-terminal
+        run: |
+          mkdir -p /tmp/genq-dmg
+          cp -r "zig-out/Ghostty.app" "/tmp/genq-dmg/GenQuery Terminal.app"
+          ln -s /Applications /tmp/genq-dmg/Applications
+          hdiutil create \
+            -volname "GenQuery Terminal" \
+            -srcfolder /tmp/genq-dmg \
+            -ov -format UDZO \
+            -o "$GITHUB_WORKSPACE/GenQuery-Terminal-macOS.dmg"
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: GenQuery-Terminal-macOS
+          path: GenQuery-Terminal-macOS.dmg
+          retention-days: 14
+
+  build-linux:
+    name: Build Linux (Ghostty)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout genq
+        uses: actions/checkout@v4
+
+      - name: Checkout genq-terminal (private, via deploy key)
+        uses: actions/checkout@v4
+        with:
+          repository: miams/genq-terminal
+          ref: genq
+          ssh-key: ${{ secrets.GENQ_TERMINAL_DEPLOY_KEY }}
+          path: genq-terminal
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Build
+        working-directory: genq-terminal
+        run: nix develop -c zig build -Doptimize=ReleaseFast -Dapp-runtime=gtk
+
+      - name: Package
+        working-directory: genq-terminal
+        run: |
+          tar -czf "$GITHUB_WORKSPACE/GenQuery-Terminal-Linux.tar.gz" \
+            -C zig-out/bin ghostty
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GenQuery-Terminal-Linux
+          path: GenQuery-Terminal-Linux.tar.gz
+          retention-days: 14
+```
+
+---
+
+## Invariants — must all be true for a successful build
 
 | Requirement | Why |
 |---|---|
-| Runner must be **macOS 26** | `actool` needs macOS 26 system frameworks to compile `images/Ghostty.icon` (IconComposer format) |
-| Zig must be installed **without Nix** on macOS | Nix isolates `SDKROOT` to a macOS 15 SDK; Zig's linker can't find macOS 26 system library stubs inside `nix develop` |
-| Zig version must be **0.15.2** | Pinned in `build.zig.zon`; upstream main now requires nightly |
-| `genq-terminal` branch must be **`genq`** | `main` tracks upstream and requires Zig nightly |
-| Xcode **26.x** required | DockTilePlugin target created with `CreatedOnToolsVersion = 26.2`; Xcode 16.x cannot build the project format |
+| Runner: **`macos-26`** | `actool` requires macOS 26 system frameworks to compile `images/Ghostty.icon` (Apple IconComposer format introduced in macOS 26) |
+| Zig installed **directly from ziglang.org**, not via Nix | Nix isolates `SDKROOT` to its own macOS 15 SDK; Zig's embedded LLVM linker then can't find macOS 26 system library TBD stubs, causing 22 undefined symbol errors |
+| Zig tarball filename: **`zig-aarch64-macos-VERSION`** | ziglang.org uses architecture-first naming (`aarch64-macos`), not platform-first (`macos-aarch64`) |
+| Zig version: **0.15.2** | Pinned as `minimum_zig_version` in `build.zig.zon`; upstream main now requires Zig nightly |
+| `genq-terminal` ref: **`genq` branch** | `main` tracks upstream Ghostty and requires Zig nightly; `genq` is pinned to v1.3.1 |
+| Xcode: **26.x** | DockTilePlugin target has `CreatedOnToolsVersion = 26.2`; Xcode 16.x cannot parse the `PBXFileSystemSynchronizedBuildFileExceptionSet` project format |
+| Actions Node.js: **24** | `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` prevents deprecation warnings and prepares for the 2026-06-02 forced cutover |
 
-## genq-terminal branch patches (on top of v1.3.1)
+## genq-terminal `genq` branch patches (on top of v1.3.1)
 
-| Commit | Change | Reason |
-|---|---|---|
-| `a418551de` | Removed `#available(macOS 26.0, *)` block from `DockTilePlugin.swift` | macOS 26-only `NSWorkspace.setIcon(nil, ...)` overload rejected by Xcode 16 SDK; the `else` branch is equivalent and SDK-compatible |
+| Commit | File | Change | Reason |
+|---|---|---|---|
+| `a418551de` | `macos/Sources/Features/Custom App Icon/DockTilePlugin.swift` | Removed `#available(macOS 26.0, *)` block | macOS 26-only `NSWorkspace.setIcon(nil, ...)` overload causes a compile error when building on any Xcode SDK that predates macOS 26; the `else` branch is functionally equivalent |
+| `f11a05111` | `docs/ci-build-history.md` | Created this document | — |
