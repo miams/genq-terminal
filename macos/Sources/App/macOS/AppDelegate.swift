@@ -185,19 +185,30 @@ class AppDelegate: NSObject,
             let resourceURL = Bundle.main.resourceURL
         else { return }
 
-        let configDir = appSupport.appendingPathComponent(bundleID)
-        let configFile = configDir.appendingPathComponent("config.ghostty")
-        let startScript = resourceURL
+        // The bundle path contains spaces ("GenQuery Terminal.app") which Ghostty's
+        // config parser does not handle. Install a symlink at a space-free path and
+        // use that in the config instead.
+        let bundledScript = resourceURL
             .appendingPathComponent("genq/scripts/genquery-start")
             .path
-        let commandLine = "command = direct:\(startScript)"
+        let localBin = (NSHomeDirectory() as NSString).appendingPathComponent(".local/bin")
+        let symlinkPath = (localBin as NSString).appendingPathComponent("genquery-start")
+
+        try? fm.createDirectory(atPath: localBin, withIntermediateDirectories: true, attributes: nil)
+        // Remove stale symlink/file then create a fresh one pointing to the current bundle.
+        try? fm.removeItem(atPath: symlinkPath)
+        try? fm.createSymbolicLink(atPath: symlinkPath, withDestinationPath: bundledScript)
+
+        let commandLine = "command = direct:\(symlinkPath)"
+        let configDir = appSupport.appendingPathComponent(bundleID)
+        let configFile = configDir.appendingPathComponent("config.ghostty")
 
         try? fm.createDirectory(at: configDir, withIntermediateDirectories: true)
 
         if let existing = try? String(contentsOf: configFile, encoding: .utf8) {
             // Config exists — only rewrite the command line if it doesn't already
-            // point to this bundle's genquery-start.
-            guard !existing.contains(startScript) else { return }
+            // reference genquery-start at the symlink path.
+            guard !existing.contains(symlinkPath) else { return }
             let updated = existing
                 .components(separatedBy: .newlines)
                 .filter { !$0.hasPrefix("command =") && !$0.hasPrefix("command=") }
@@ -205,7 +216,6 @@ class AppDelegate: NSObject,
                 .appending("\n\(commandLine)\n")
             try? updated.write(to: configFile, atomically: true, encoding: .utf8)
         } else {
-            // No config — write a minimal one.
             let content = """
             # GenQuery Terminal configuration — generated on first launch.
             # Edit this file to customise your GenQuery Terminal.
