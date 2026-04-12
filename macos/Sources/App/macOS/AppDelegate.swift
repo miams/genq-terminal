@@ -173,9 +173,10 @@ class AppDelegate: NSObject,
         ghostty.delegate = self
     }
 
-    /// On first launch, writes a default Ghostty config that sets the `command` to
-    /// genquery-start so GenQuery Terminal opens genq instead of the user's login shell.
-    /// Skipped if a config file already exists — preserves any user customizations.
+    /// Ensures the Ghostty config's `command` points to the genquery-start script
+    /// bundled inside this app. Writes a new config if none exists, or updates
+    /// an existing config's command line if it doesn't already reference this bundle.
+    /// All other settings in an existing config are preserved.
     private static func writeDefaultConfigIfNeeded() {
         let fm = FileManager.default
         guard
@@ -186,23 +187,34 @@ class AppDelegate: NSObject,
 
         let configDir = appSupport.appendingPathComponent(bundleID)
         let configFile = configDir.appendingPathComponent("config.ghostty")
-
-        guard !fm.fileExists(atPath: configFile.path) else { return }
-
         let startScript = resourceURL
             .appendingPathComponent("genq/scripts/genquery-start")
             .path
-
-        let content = """
-        # GenQuery Terminal configuration — generated on first launch.
-        # Edit this file to customise your GenQuery Terminal.
-        # Full option reference: https://github.com/miams/genq-terminal
-
-        command = \(startScript)
-        """
+        let commandLine = "command = direct:\(startScript)"
 
         try? fm.createDirectory(at: configDir, withIntermediateDirectories: true)
-        try? content.write(to: configFile, atomically: true, encoding: .utf8)
+
+        if let existing = try? String(contentsOf: configFile, encoding: .utf8) {
+            // Config exists — only rewrite the command line if it doesn't already
+            // point to this bundle's genquery-start.
+            guard !existing.contains(startScript) else { return }
+            let updated = existing
+                .components(separatedBy: .newlines)
+                .filter { !$0.hasPrefix("command =") && !$0.hasPrefix("command=") }
+                .joined(separator: "\n")
+                .appending("\n\(commandLine)\n")
+            try? updated.write(to: configFile, atomically: true, encoding: .utf8)
+        } else {
+            // No config — write a minimal one.
+            let content = """
+            # GenQuery Terminal configuration — generated on first launch.
+            # Edit this file to customise your GenQuery Terminal.
+            # Full option reference: https://github.com/miams/genq-terminal
+
+            \(commandLine)
+            """
+            try? content.write(to: configFile, atomically: true, encoding: .utf8)
+        }
     }
 
     // MARK: - NSApplicationDelegate
