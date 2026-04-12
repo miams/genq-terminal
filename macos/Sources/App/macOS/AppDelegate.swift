@@ -162,6 +162,7 @@ class AppDelegate: NSObject,
     private var menuItemsByShortcut: [MenuShortcutKey: Weak<NSMenuItem>] = [:]
 
     override init() {
+        AppDelegate.writeDefaultConfigIfNeeded()
 #if DEBUG
         ghostty = Ghostty.App(configPath: ProcessInfo.processInfo.environment["GHOSTTY_CONFIG_PATH"])
 #else
@@ -170,6 +171,38 @@ class AppDelegate: NSObject,
         super.init()
 
         ghostty.delegate = self
+    }
+
+    /// On first launch, writes a default Ghostty config that sets the `command` to
+    /// genquery-start so GenQuery Terminal opens genq instead of the user's login shell.
+    /// Skipped if a config file already exists — preserves any user customizations.
+    private static func writeDefaultConfigIfNeeded() {
+        let fm = FileManager.default
+        guard
+            let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first,
+            let bundleID = Bundle.main.bundleIdentifier,
+            let resourceURL = Bundle.main.resourceURL
+        else { return }
+
+        let configDir = appSupport.appendingPathComponent(bundleID)
+        let configFile = configDir.appendingPathComponent("config.ghostty")
+
+        guard !fm.fileExists(atPath: configFile.path) else { return }
+
+        let startScript = resourceURL
+            .appendingPathComponent("genq/scripts/genquery-start")
+            .path
+
+        let content = """
+        # GenQuery Terminal configuration — generated on first launch.
+        # Edit this file to customise your GenQuery Terminal.
+        # Full option reference: https://github.com/miams/genq-terminal
+
+        command = \(startScript)
+        """
+
+        try? fm.createDirectory(at: configDir, withIntermediateDirectories: true)
+        try? content.write(to: configFile, atomically: true, encoding: .utf8)
     }
 
     // MARK: - NSApplicationDelegate
