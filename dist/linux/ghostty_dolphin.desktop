@@ -5,7 +5,7 @@ MimeType=inode/directory
 Actions=RunGhosttyDir
 
 [Desktop Action RunGhosttyDir]
-Name=Open GenQuery Terminal Here
+Name=Open GenQuery Here
 Icon=com.zephyrsystems.genquery
 Exec=ghostty --working-directory=%F --gtk-single-instance=false
 

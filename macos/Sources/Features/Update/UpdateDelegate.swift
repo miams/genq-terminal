@@ -7,12 +7,18 @@ extension UpdateDriver: SPUUpdaterDelegate {
             return nil
         }
 
-        // Sparkle supports a native concept of "channels" but it requires that
-        // you share a single appcast file. We don't want to do that so we
-        // do this instead.
+        // GenQuery publishes arch-specific appcast files as GitHub Release assets.
+        // We select the right one at compile time so Sparkle always downloads
+        // the DMG that matches the running architecture.
+        #if arch(arm64)
+        let archSuffix = "arm64"
+        #else
+        let archSuffix = "x86_64"
+        #endif
+        let base = "https://github.com/miams/genq/releases/latest/download"
         switch appDelegate.ghostty.config.autoUpdateChannel {
-        case .tip: return "https://tip.files.ghostty.org/appcast.xml"
-        case .stable: return "https://release.files.ghostty.org/appcast.xml"
+        case .tip:    return "\(base)/appcast-\(archSuffix).xml"
+        case .stable: return "\(base)/appcast-\(archSuffix).xml"
         }
     }
 

@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleName</key>
+	<string>GenQuery</string>
 	<key>NSAutoFillRequiresTextContentTypeForOneTimeCodeOnMac</key>
 	<true/>
 	<key>NSDockTilePlugIn</key>
@@ -106,15 +108,17 @@
 	</array>
 	<key>SUEnableAutomaticChecks</key>
 	<false/>
+	<!-- Run: ./bin/generate_keys (from Sparkle framework), store private key as
+	     SPARKLE_PRIVATE_KEY GitHub secret, paste the public key below. -->
 	<key>SUPublicEDKey</key>
-	<string>wsNcGf5hirwtdXMVnYoxRIX/SqZQLMOsYlD3q3imeok=</string>
+	<string>wnhMCUy+RlMlIaXstSlyiOT7wdrogiClvu3/4UUVlyE=</string>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
 			<key>UTTypeIdentifier</key>
 			<string>com.zephyrsystems.genquerySurfaceId</string>
 			<key>UTTypeDescription</key>
-			<string>GenQuery Terminal Surface Identifier</string>
+			<string>GenQuery Surface Identifier</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>

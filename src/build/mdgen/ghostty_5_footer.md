@@ -36,7 +36,7 @@ See GitHub issues: <https://github.com/miams/genq-terminal/issues>
 # AUTHOR
 
 Zephyr Systems
-GenQuery Terminal contributors <https://github.com/miams/genq-terminal/graphs/contributors>
+GenQuery contributors <https://github.com/miams/genq-terminal/graphs/contributors>
 
 # SEE ALSO
 

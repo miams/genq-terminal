@@ -185,9 +185,8 @@ class AppDelegate: NSObject,
             let resourceURL = Bundle.main.resourceURL
         else { return }
 
-        // The bundle path contains spaces ("GenQuery Terminal.app") which Ghostty's
-        // config parser does not handle. Install a symlink at a space-free path and
-        // use that in the config instead.
+        // Install a symlink at a stable, path-safe location and use that in the
+        // config instead of referencing the bundle path directly.
         let bundledScript = resourceURL
             .appendingPathComponent("genq/scripts/genquery-start")
             .path
@@ -217,8 +216,8 @@ class AppDelegate: NSObject,
             try? updated.write(to: configFile, atomically: true, encoding: .utf8)
         } else {
             let content = """
-            # GenQuery Terminal configuration — generated on first launch.
-            # Edit this file to customise your GenQuery Terminal.
+            # GenQuery configuration — generated on first launch.
+            # Edit this file to customise your GenQuery.
             # Full option reference: https://github.com/miams/genq-terminal
 
             \(commandLine)

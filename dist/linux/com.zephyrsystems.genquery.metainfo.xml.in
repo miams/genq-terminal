@@ -10,7 +10,7 @@
   <url type="contribute">https://github.com/ghostty-org/ghostty/blob/main/CONTRIBUTING.md</url>
   <url type="translate">https://github.com/ghostty-org/ghostty/blob/main/po/README_TRANSLATORS.md</url>
   <url type="vcs-browser">https://github.com/ghostty-org/ghostty</url>
-  <summary>GenQuery Terminal is a fast, feature-rich, and cross-platform terminal emulator</summary>
+  <summary>GenQuery is a fast, feature-rich, and cross-platform terminal emulator</summary>
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
   <content_rating type="oars-1.1" />
@@ -19,10 +19,10 @@
   </developer>
   <description>
     <p>
-      GenQuery Terminal is a terminal emulator that differentiates itself by being fast,
+      GenQuery is a terminal emulator that differentiates itself by being fast,
       feature-rich, and native. While there are many excellent terminal
       emulators available, they all force you to choose between speed,
-      features, or native UIs. GenQuery Terminal provides all three.
+      features, or native UIs. GenQuery provides all three.
     </p>
   </description>
   <recommends>
