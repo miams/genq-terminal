@@ -107,7 +107,7 @@
 		</dict>
 	</array>
 	<key>SUEnableAutomaticChecks</key>
-	<false/>
+	<true/>
 	<!-- Run: ./bin/generate_keys (from Sparkle framework), store private key as
 	     SPARKLE_PRIVATE_KEY GitHub secret, paste the public key below. -->
 	<key>SUPublicEDKey</key>
