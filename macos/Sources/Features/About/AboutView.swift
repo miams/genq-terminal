@@ -4,12 +4,14 @@ struct AboutView: View {
     @Environment(\.openURL) var openURL
 
     private let githubURL = URL(string: "https://github.com/miams/genq-terminal")
+    private let ghosttyURL = URL(string: "https://ghostty.org/")
 
     /// Read the commit from the bundle.
     private var build: String? { Bundle.main.infoDictionary?["CFBundleVersion"] as? String }
     private var commit: String? { Bundle.main.infoDictionary?["GhosttyCommit"] as? String }
     private var version: String? { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String }
     private var copyright: String? { Bundle.main.infoDictionary?["NSHumanReadableCopyright"] as? String }
+    private var ghosttyBaseVersion: String? { Bundle.main.infoDictionary?["GhosttyBaseVersion"] as? String }
 
     #if os(macOS)
     // This creates a background style similar to the Apple "About My Mac" Window
@@ -69,6 +71,9 @@ struct AboutView: View {
                        let url = githubURL?.appendingPathComponent("/commits/\(commit)") {
                         PropertyRow(label: "Commit", text: commit, url: url)
                     }
+                    if let ghosttyBaseVersion, let url = ghosttyURL {
+                        PropertyRow(label: "Based on Ghostty", text: ghosttyBaseVersion, url: url)
+                    }
                 }
                 .frame(maxWidth: .infinity)
 
@@ -78,6 +83,21 @@ struct AboutView: View {
                             openURL(url)
                         }
                     }
+                    if let url = ghosttyURL {
+                        Button("Ghostty") {
+                            openURL(url)
+                        }
+                    }
+                }
+
+                if let ghosttyBaseVersion {
+                    Text("GenQuery Terminal is powered by Ghostty \(ghosttyBaseVersion), courtesy of the Ghostty development team.")
+                        .font(.caption2)
+                        .textSelection(.enabled)
+                        .tint(.secondary)
+                        .opacity(0.6)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
                 }
 
                 if let copy = self.copyright {
