@@ -91,7 +91,7 @@ struct AboutView: View {
                 }
 
                 if let ghosttyBaseVersion {
-                    Text("GenQuery Terminal is powered by Ghostty \(ghosttyBaseVersion), courtesy of the Ghostty development team.")
+                    Text("Powered by Ghostty \(ghosttyBaseVersion)")
                         .font(.caption2)
                         .textSelection(.enabled)
                         .tint(.secondary)
